@@ -33,60 +33,103 @@
             background: rgba(255,255,255,0.1);
             border-radius: 8px;
         }
-        .toggle-btn {
-            width: 200px;
-            height: 200px;
+        .buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .control-btn {
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
-        .toggle-btn:active {
+        .control-btn:active {
             transform: scale(0.95);
         }
-        .toggle-btn:disabled {
+        .control-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+        .control-btn.animation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .control-btn.static {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+        }
+        .control-btn.go {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+        }
+        .control-btn.active {
+            outline: 4px solid #fff;
+            outline-offset: 4px;
         }
     </style>
 </head>
 <body>
     <h1>Glass Animals Display</h1>
     <div class="status">Current: <span id="current-mode">loading...</span></div>
-    <button class="toggle-btn" id="toggle-btn">TOGGLE</button>
+    <div class="buttons">
+        <button class="control-btn animation" id="btn-animation">ANIMATION</button>
+        <button class="control-btn static" id="btn-static">STATIC</button>
+        <button class="control-btn go" id="btn-go">GO</button>
+    </div>
 
     <script>
-        const btn = document.getElementById('toggle-btn');
         const modeSpan = document.getElementById('current-mode');
+        const buttons = {
+            animation: document.getElementById('btn-animation'),
+            static: document.getElementById('btn-static'),
+            go: document.getElementById('btn-go')
+        };
+
+        function updateActiveButton(mode) {
+            Object.entries(buttons).forEach(([key, btn]) => {
+                btn.classList.toggle('active', key === mode);
+            });
+        }
 
         async function getState() {
             try {
                 const res = await fetch('/api/state');
                 const data = await res.json();
                 modeSpan.textContent = data.mode;
+                updateActiveButton(data.mode);
             } catch (e) {
                 modeSpan.textContent = 'error';
             }
         }
 
-        async function toggle() {
-            btn.disabled = true;
+        async function setMode(mode) {
+            Object.values(buttons).forEach(btn => btn.disabled = true);
             try {
-                const res = await fetch('/api/state', { method: 'POST' });
+                const res = await fetch('/api/state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode })
+                });
                 const data = await res.json();
                 modeSpan.textContent = data.mode;
+                updateActiveButton(data.mode);
             } catch (e) {
                 modeSpan.textContent = 'error';
             }
-            btn.disabled = false;
+            Object.values(buttons).forEach(btn => btn.disabled = false);
         }
 
-        btn.addEventListener('click', toggle);
+        buttons.animation.addEventListener('click', () => setMode('animation'));
+        buttons.static.addEventListener('click', () => setMode('static'));
+        buttons.go.addEventListener('click', () => setMode('go'));
+
         getState();
     </script>
 </body>

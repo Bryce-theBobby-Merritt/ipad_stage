@@ -50,28 +50,41 @@ exports.handler = async (event, context) => {
         };
     }
 
-    // POST - toggle state
+    // POST - set specific mode
     if (event.httpMethod === "POST") {
-        let currentMode = "animation";
+        const validModes = ["animation", "static", "go"];
         let newMode;
+
+        // Parse request body for specific mode
+        try {
+            const body = JSON.parse(event.body || "{}");
+            if (body.mode && validModes.includes(body.mode)) {
+                newMode = body.mode;
+            } else {
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({ error: "Invalid mode. Use: animation, static, or go" })
+                };
+            }
+        } catch (err) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: "Invalid JSON body" })
+            };
+        }
 
         if (useBlobs) {
             try {
                 const store = getStore({ name: "display-state", consistency: "strong" });
-                const state = await store.get(key);
-                currentMode = state || "animation";
-                newMode = currentMode === "animation" ? "static" : "animation";
                 await store.set(key, newMode);
             } catch (err) {
                 // Fall back to local state
-                currentMode = localState[key] || "animation";
-                newMode = currentMode === "animation" ? "static" : "animation";
                 localState[key] = newMode;
             }
         } else {
             // Use in-memory for local dev
-            currentMode = localState[key] || "animation";
-            newMode = currentMode === "animation" ? "static" : "animation";
             localState[key] = newMode;
         }
 

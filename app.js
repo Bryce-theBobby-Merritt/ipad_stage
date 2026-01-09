@@ -1,6 +1,7 @@
 (function() {
     const animationEl = document.getElementById('animation');
     const staticEl = document.getElementById('static');
+    const goEl = document.getElementById('go');
     let currentMode = 'animation';
     const POLL_INTERVAL = 1500;
 
@@ -8,12 +9,16 @@
         if (mode === currentMode) return;
         currentMode = mode;
 
+        animationEl.classList.remove('active');
+        staticEl.classList.remove('active');
+        goEl.classList.remove('active');
+
         if (mode === 'animation') {
             animationEl.classList.add('active');
-            staticEl.classList.remove('active');
-        } else {
-            animationEl.classList.remove('active');
+        } else if (mode === 'static') {
             staticEl.classList.add('active');
+        } else if (mode === 'go') {
+            goEl.classList.add('active');
         }
     }
 
