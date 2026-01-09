@@ -1,0 +1,8 @@
+{
+  "name": "ipad-stage-display",
+  "version": "1.0.0",
+  "description": "Fullscreen Glass Animals animation display for iPad with remote control",
+  "dependencies": {
+    "@netlify/blobs": "^7.0.0"
+  }
+}
